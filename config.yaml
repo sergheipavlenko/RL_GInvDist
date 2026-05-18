@@ -1,0 +1,134 @@
+# config.yaml
+# Конфигурация RL-системы для выбора мономиальных порядков
+
+# ============ ПАРАМЕТРЫ МОДЕЛИ ============
+model:
+  name: "MonomorphicOrderPolicy"
+  type: "MLP"
+  state_dim: 8
+  num_actions: 3
+  hidden_dim: 128
+  second_hidden_dim: 64
+  activation: "ReLU"
+  weight_init: "xavier_uniform"
+
+# ============ ПАРАМЕТРЫ ОБУЧЕНИЯ ============
+training:
+  algorithm: "PPO"
+  learning_rate: 3e-4
+  num_episodes: 100
+  batch_size: 64
+  n_epochs: 3  # Количество эпох для обновления политики
+  
+  # Гиперпараметры PPO
+  gamma: 0.99  # Коэффициент дисконтирования
+  gae_lambda: 0.95  # Параметр Generalized Advantage Estimation
+  clip_ratio: 0.2  # Параметр клиппинга в PPO
+  entropy_coeff: 0.01  # Коэффициент энтропии
+  value_loss_coeff: 0.5  # Коэффициент для loss функции оценки
+  
+  # Оптимизация
+  optimizer: "Adam"
+  gradient_clip: 0.5
+  weight_decay: 1e-5
+
+# ============ ЭКСТРАКЦИЯ ПРИЗНАКОВ ============
+features:
+  max_vars: 10
+  max_degree: 10
+  feature_dim: 8
+  
+  # Нормализация признаков
+  normalize: true
+  normalization_type: "min_max"  # or "standard"
+
+# ============ ОКРУЖЕНИЕ ============
+environment:
+  type: "simulated"  # Или "real" при подключении к GInvDist
+  systems:
+    - "cyclic_5"
+    - "cyclic_6"
+    - "eco_5"
+    - "boon"
+    - "butcher"
+    - "chandra"
+    - "assur44"
+    - "oscillator_5"
+  
+  reward_type: "speedup"  # или "normalized_speedup", "log_speedup"
+  penalty_for_wrong_order: 0.1
+
+# ============ МОНОМИАЛЬНЫЕ ПОРЯДКИ ============
+monomial_orders:
+  0: "LEX"              # Лексикографический
+  1: "GREVLEX"          # Степенно-лексикографический (обычно оптимален)
+  2: "REVGREVLEX"       # Степенно-обратно-лексикографический
+
+# ============ СОХРАНЕНИЕ И ЛОГИРОВАНИЕ ============
+logging:
+  level: "INFO"
+  log_file: "logs/training.log"
+  
+  # Сохранение моделей
+  save_model_every: 10  # Сохранять модель каждые N эпизодов
+  save_dir: "models"
+  best_model_metric: "mean_reward"
+  
+  # Отслеживание метрик
+  track_metrics:
+    - "mean_reward"
+    - "policy_loss"
+    - "value_loss"
+    - "entropy"
+    - "accuracy"
+
+# ============ ВАЛИДАЦИЯ И ТЕСТИРОВАНИЕ ============
+validation:
+  enabled: true
+  validation_split: 0.2
+  test_systems:
+    - "cyclic_5"
+    - "cyclic_6"
+    - "eco_5"
+    - "boon"
+    - "butcher"
+    - "chandra"
+    - "assur44"
+    - "oscillator_5"
+
+# ============ ЭКСПОРТ МОДЕЛИ ============
+export:
+  formats:
+    - "pth"  # PyTorch
+    - "onnx"  # Для Netron визуализации
+    - "torchscript"  # Для deployment
+  
+  export_dir: "exports"
+  export_onnx_opset: 12
+
+# ============ ПАРАМЕТРЫ ВЫЧИСЛЕНИЯ ============
+computation:
+  device: "cpu"  # "cuda" если доступен GPU
+  dtype: "float32"
+  num_workers: 1
+  
+  # Для реальной интеграции с GInvDist
+  ginvdist:
+    timeout: 300  # Максимум 5 минут на вычисление
+    memory_limit: 32000  # МБ
+    enable_caching: true
+
+# ============ ЭКСПЕРИМЕНТАЛЬНЫЕ ПАРАМЕТРЫ ============
+experiments:
+  random_seed: 42
+  num_runs: 1
+  
+  # Гиперпараметры для поиска
+  hyperparameter_search:
+    enabled: false
+    method: "grid"  # или "random", "bayesian"
+    
+    # Параметры для поиска
+    learning_rates: [1e-4, 3e-4, 1e-3]
+    clip_ratios: [0.1, 0.2, 0.3]
+    gamma_values: [0.95, 0.99, 0.999]
