@@ -30,6 +30,7 @@ RL-агент на основе PPO (Proximal Policy Optimization) для авт
 
 ```
 RL_GInvDist/
+├── Презентация_RL_GlnvDist_Павленко.pptx
 ├── rl_monomial_agent.py      # Основные классы: MLP, RLEnvironment, PPOAgent
 ├── ppo_core.py               # Ядро PPO: PPOBuffer, compute_gae(), ppo_update(), train_ppo()
 ├── feature_extractor.py      # Извлечение 8 признаков полиномиальной системы
